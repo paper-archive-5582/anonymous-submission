@@ -21,6 +21,7 @@ def gen_LWE_sample(n, m, q, Xs = "Gaussian", Xe = "Gaussian"):
     :param q: The modular of each element of LWE instance.
     :param Xs: Distribution of secret vector. ("Gaussian" or "CBD")
     :param Xe: Distribution of error vector. ("Gaussian" or "CBD")
+    :return: Tuple (A, b) where A ∈ Z_q^{m×n} and b ∈ Z_q^{m×1}.
     """
 
     # Generate A ∈ Z_q^{m×n}, where (A)_{i,j} ~ Uniform
@@ -64,6 +65,7 @@ def gen_BKZ_reduced_primal_basis(LWEsample, beta, q):
     :param LWEsample: LWE samples (A,b=As + e)
     :param block_size: Block size from BKZ-β algorithm.
     :param modular: The modular of each element of basis.
+    :return: BKZ-β reduced basis as fpylll IntegerMatrix of shape (d, d).
     """
     
     A = LWEsample[0]
@@ -148,7 +150,15 @@ def gen_BKZ_reduced_primal_basis(LWEsample, beta, q):
 from utility import augment_with_identity, split_aug
 
 def HKZ_reduction_with_Aug(A):
+    """
+    Apply (full-block) BKZ with block size equal to the dimension as a practical HKZ surrogate,
+    while tracking the unimodular transformation via augmentation.
 
+    :param A: fpylll IntegerMatrix of shape (m, m). Must be square.
+    :return: (A_red, U) where:
+             - A_red: reduced left block (m×m),
+             - U: unimodular matrix (m×m) such that A_red = U * A (row-operation convention).
+    """
     m, n = A.nrows, A.ncols
     assert m == n, "We assume only square of the tail reduced blocks"
     Aug = augment_with_identity(A)
@@ -196,79 +206,102 @@ q = 257
 beta = 40
 
 def compute_final_basis(n, m, q, beta):
-  # 0-1. Generate the LWE sample (A, b=As+e)
-  lwe_sample = gen_LWE_sample(n, m, q)
-  
-  # 0-2. Compute the BKZ-β reduced primal lattice using LWE sample
-  B_bkz = gen_BKZ_reduced_primal_basis(lwe_sample, beta, q)
-  
-  # 0-3. Find k such that COST(BKZ-β) = COST(SVP-(β+k))
-  # We set the dimension of primal lattice is n+m+1
-  k = find_k(beta, n+m+1)
-  
-  print("step 0 finish")
-  
-  # 1. Extract the middle part which is applied the dual HKZ reduction
-  Q, R = qr_R_from_row_basis(B_bkz)
-  
-  t = beta + k
-  i0 = n + m + 1 - (2*beta + k) # equivalently i0 = d - (t + k)
-  V = R[i0:, i0:i0+t]
-  Qm, Rm = np.linalg.qr(V)
-  
-  M_row_real = Rm.T
-  
-  # 1-1. Compute inverse matrix of M to make dual HKZ-reduced basis
-  D_row_real = np.linalg.inv(M_row_real)
-  
-  # Integerize with scale factor
-  scale_middle = 2 ** 40
-  scale_dual=2**40
-  scale_tail=2**40
-  
-  M_int = np.rint(scale_middle * M_row_real).astype(object)
-  D_int = np.rint(scale_dual * D_row_real).astype(object)
-  
-  # Replace the type numpy array to IntegerMatrix in fpylll
-  M_IM = numpy_to_im(M_int)
-  D_IM = numpy_to_im(D_int)
-  
-  # 1-2. HKZ-reduction to Dual basis D
-  D_red, U = HKZ_reduction_with_Aug(D_IM)
-  
-  Uinv = unimodular_invers_Z(U)
-  
-  # 1-3. Updating the BKZ-reduced basis using the result of dual HKZ-reduction
-  block = np.array([[int(B_bkz[i0+i,j]) for j in range(n+m+1)] for i in range(t)], dtype=object)
-  new_block = (Uinv @ block)
-  for i in range(t):
+    
+    """
+    Run the full "strengthened primal pipeline" on a generated LWE instance:
+
+      0) Generate LWE sample (A, b).
+      1) Build and BKZ-β reduce the primal embedding basis.
+      2) Choose k by time-matching (Cost(BKZ-β) ≈ Cost(SVP-(β+k))).
+      3) Extract the middle projected block and apply dual-HKZ-like reduction:
+         - take a middle t-dimensional block from the R-factor (QR/GSO coordinates),
+         - invert to obtain a dual basis block,
+         - reduce it with HKZ (via BKZ with full block size),
+         - lift the unimodular transform back to update the original BKZ-reduced basis.
+      4) Apply tail HKZ reduction on the last t-dimensional tail block and lift back.
+
+    This function returns the updated basis after:
+      BKZ-β → middle dual-HKZ preprocessing → terminal tail HKZ.
+
+    :param n: LWE secret dimension (A has n columns).
+    :param m: Number of LWE samples (A has m rows).
+    :param q: Modulus for the embedding lattice construction.
+    :param beta: BKZ block size β for the initial reduction stage.
+    :return: Final updated basis (fpylll IntegerMatrix) after the pipeline.
+    """
+    # 0-1. Generate the LWE sample (A, b=As+e)
+    lwe_sample = gen_LWE_sample(n, m, q)
+    
+    # 0-2. Compute the BKZ-β reduced primal lattice using LWE sample
+    B_bkz = gen_BKZ_reduced_primal_basis(lwe_sample, beta, q)
+    
+    # 0-3. Find k such that COST(BKZ-β) = COST(SVP-(β+k))
+    # We set the dimension of primal lattice is n+m+1
+    k = find_k(beta, n+m+1)
+    
+    print("step 0 finish")
+    
+    # 1. Extract the middle part which is applied the dual HKZ reduction
+    Q, R = qr_R_from_row_basis(B_bkz)
+    
+    t = beta + k
+    i0 = n + m + 1 - (2*beta + k) # equivalently i0 = d - (t + k)
+    V = R[i0:, i0:i0+t]
+    Qm, Rm = np.linalg.qr(V)
+    
+    M_row_real = Rm.T
+    
+    # 1-1. Compute inverse matrix of M to make dual HKZ-reduced basis
+    D_row_real = np.linalg.inv(M_row_real)
+    
+    # Integerize with scale factor
+    scale_middle = 2 ** 40
+    scale_dual=2**40
+    scale_tail=2**40
+    
+    M_int = np.rint(scale_middle * M_row_real).astype(object)
+    D_int = np.rint(scale_dual * D_row_real).astype(object)
+    
+    # Replace the type numpy array to IntegerMatrix in fpylll
+    M_IM = numpy_to_im(M_int)
+    D_IM = numpy_to_im(D_int)
+    
+    # 1-2. HKZ-reduction to Dual basis D
+    D_red, U = HKZ_reduction_with_Aug(D_IM)
+    
+    Uinv = unimodular_invers_Z(U)
+    
+    # 1-3. Updating the BKZ-reduced basis using the result of dual HKZ-reduction
+    block = np.array([[int(B_bkz[i0+i,j]) for j in range(n+m+1)] for i in range(t)], dtype=object)
+    new_block = (Uinv @ block)
+    for i in range(t):
       for j in range(n+m+1):
           B_bkz[i0+i,j] = int(new_block[i,j])
-  
-  print("step 1 finish")
-  
-  # 2. Apply HKZ-reduction to Tail part
-  Q2, R2 = qr_R_from_row_basis(B_bkz)
-  j0 = n + m + 1 - t
-  R_tail = R2[j0:, j0:]
-  
-  # 2-1. Integerize the tail part basis
-  Tail_row_real = R_tail.T
-  Tail_int = np.rint(scale_tail * Tail_row_real).astype(object)
-  Tail_IM = numpy_to_im(Tail_int)
-  
-  # 2-2. Apply HKZ-reduction to tail part
-  Tail_red, V = HKZ_reduction_with_Aug(Tail_IM)
-  
-  # 2-3. Updating the BKZ-reduved basis using the result of Tail HKZ-reduction
-  V_np = np.array([[int(V[i,j]) for j in range(V.ncols)] for i in range(V.nrows)], dtype = object)
-  tail_block = np.array([[int(B_bkz[j0+i,j]) for j in range(n+m+1)] for i in range(t)], dtype=object)
-  new_tail_block = (V_np @ tail_block)
-  for i in range(t):
+    
+    print("step 1 finish")
+    
+    # 2. Apply HKZ-reduction to Tail part
+    Q2, R2 = qr_R_from_row_basis(B_bkz)
+    j0 = n + m + 1 - t
+    R_tail = R2[j0:, j0:]
+    
+    # 2-1. Integerize the tail part basis
+    Tail_row_real = R_tail.T
+    Tail_int = np.rint(scale_tail * Tail_row_real).astype(object)
+    Tail_IM = numpy_to_im(Tail_int)
+    
+    # 2-2. Apply HKZ-reduction to tail part
+    Tail_red, V = HKZ_reduction_with_Aug(Tail_IM)
+    
+    # 2-3. Updating the BKZ-reduved basis using the result of Tail HKZ-reduction
+    V_np = np.array([[int(V[i,j]) for j in range(V.ncols)] for i in range(V.nrows)], dtype = object)
+    tail_block = np.array([[int(B_bkz[j0+i,j]) for j in range(n+m+1)] for i in range(t)], dtype=object)
+    new_tail_block = (V_np @ tail_block)
+    for i in range(t):
       for j in range(n+m+1):
           B_bkz[j0+i, j] = int(new_tail_block[i,j])
-  
-  print("step 2 finish")
-
-  return B_bkz
+    
+    print("step 2 finish")
+    
+    return B_bkz
 
