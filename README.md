@@ -9,7 +9,7 @@ The repo is organized by paper-section artifacts under `src/`.
 ## Repository layout
 
 - [`src/4.Lemma/`](src/4.Lemma)  
-  Empirical comparison of **measured** vs **heuristic** log tail-volume behavior after HKZ reduction.  
+  Empirical comparison of **measured** vs **heuristic** log tail-volume behavior after dual-HKZ reduction.  
   - Code: `tail_vol_HKZ.py`  
   - Plots: `Result/Lemma3_fixed_dim.png`, `Result/Lemma3_fixed_k.png`
 
