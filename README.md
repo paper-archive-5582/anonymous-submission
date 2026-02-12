@@ -1,6 +1,6 @@
 # Anonymous Submission — Code & Experimental Artifacts
 
-This repository contains the code and experimental artifacts accompanying an anonymous paper submission on **primal-embedding lattice attacks on LWE**, with an emphasis on strengthening the **tail step** via an additional **middle dual-HKZ-style preprocessing** stage and validating a **tail-projection distribution model**.
+This repository contains the code and experimental artifacts accompanying an anonymous paper submission on **primal-embedding lattice attacks on LWE**, with an emphasis on strengthening the **tail step** via an additional **middle dual-HKZ preprocessing** stage and validating a **tail-projection distribution model**.
 
 The repo is organized by paper-section artifacts under `src/`.
 
