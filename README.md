@@ -14,7 +14,7 @@ The repo is organized by paper-section artifacts under `src/`.
   - Plots: `Result/Lemma3_fixed_dim.png`, `Result/Lemma3_fixed_k.png`
 
 - [`src/5.Experimental%20Result/`](src/5.Experimental%20Result)  
-  End-to-end experimental pipeline (BKZ → middle dual-HKZ-like → tail HKZ) and **chi-square validation** for normalized tail projections.  
+  End-to-end experimental pipeline (BKZ → middle dual-HKZ → tail HKZ) and **chi-square validation** for normalized tail projections.  
   - Code: `compute_final_basis.py`, `Expermient.py`, `utility.py`  
   - Plots: `Result/Experiement_Result_cbd.png`, `Result/Experiment_Result_dg.png`
 
