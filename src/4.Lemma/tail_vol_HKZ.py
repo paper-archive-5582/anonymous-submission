@@ -51,7 +51,7 @@ def cal_bstars_norm(dimension, block_size, volume):
     b_stars_list = []
     for i in range(dimension):
         # GSA profile: ||b_i^*|| ≈ (sqrt(alpha))^{d-1-2i} * det(L)^{1/d}
-        bi_star = math.pow(math.sqrt(alpha_beta), dimension - 1 - 2*i) * math.pow(determinant, 1/dimension)
+        bi_star = math.pow(math.sqrt(alpha_beta), dimension - 1 - 2*i) * math.pow(volume, 1/dimension)
         b_stars_list.append(bi_star)
 
     return b_stars_list
@@ -176,27 +176,38 @@ def dual_HKZ_log_tail_volume(B_hkz, n, k):
     return log_tail_volume, log_total_volume
 
 if __name__ == "__main__":
-    dim = 60
+    count = 12
+
+    dim = [60+i for i in range(count+1)]
+
+    hkz_dict = {}
     q = 257
     beta = 30
-    k = 1
-    # Example volume model: volume = q^{(dim-1)/2}
-    volume = math.pow(q, (d-1)//2)
-    
-    Q = random_orthonormal_basis(d, seed=0)
-    GSA_profile = cal_bstars_norm(d, beta, volume)
-    GSA_basis = make_GSA_basis(GSA_profile, d)
-    
-    input_basis = Q @ GSA_basis
-    B_hkz = HKZ_reduction_square_matrix(input_basis)
-  
-    log_tail_volume, log_total_volume = dual_HKZ_log_tail_volume(B_hkz, d,k)
-  
-    # Heuristic(Lemma3)
-    heu = k * math.log(math.sqrt(k/d)) + k * (-math.log(volume)) / d
+    k=10
 
-    print(f"Logscale_Tail_Volume:{log_tail_volume}")
-    print(f"Heuristic Lemma5 : {heu}")
+    for d in dim:
+        volume = math.pow(q, (d-1)//2)
+
+        Q = random_orthonormal_basis(d, seed=0)
+
+        GSA_profile = cal_bstars_norm(d, beta, volume)
+        
+        GSA_basis = make_GSA_basis(GSA_profile, d)
+
+        input_basis = Q @ GSA_basis
+        
+        B_hkz = HKZ_reduction_square_matrix(input_basis)
+
+        
+        hkz_dict[d] = {}
+        hkz_dict[d]["volume"] = volume
+        hkz_dict[d]["Q"] = Q
+        hkz_dict[d]["GSA_profile"] = GSA_profile
+        hkz_dict[d]["GSA_basis"] = GSA_basis
+        hkz_dict[d]["input_basis"] = input_basis
+        hkz_dict[d]["B_hkz"] = B_hkz
+
+        print(f"{d} dimension process complete")
 
     # plotting
     # 1. Fixed dim=60 and k ∈{1, ..., 30}
@@ -205,8 +216,8 @@ if __name__ == "__main__":
     y_real_k = [dual_HKZ_log_tail_volume(hkz_dict[dim_k]["B_hkz"], dim_k,i)[0] for i in range(1,31)]
     y_heur_k = [i * math.log(math.sqrt(i/dim_k)) + i * (-math.log(volume)) / d for i in range(1,31)]
 
-    plt.plot(x, y_real_k, label="real",marker="^", markersize=3, linewidth=1.8, color="blue")
-    plt.plot(x, y_heur_k, label="heur",marker="s", markersize=3, linewidth=1.8, color="red")
+    plt.plot(x_k, y_real_k, label="real",marker="^", markersize=3, linewidth=1.8, color="blue")
+    plt.plot(x_k, y_heur_k, label="heur",marker="s", markersize=3, linewidth=1.8, color="red")
     
     # grid behind lines
     ax = plt.gca()
@@ -222,15 +233,16 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.savefig(f"Result from Fixed dim={dim_k}.png", dpi=300, bbox_inches="tight")
     plt.show()
+    plt.close()
 
     # 2. Fixed k=10 and dim ∈ {60, ..., 72}
-    x_dim = np.linspace(60,72,13)
+    x_dim = np.linspace(60,60+count,count+1)
     k_dim = 10
-    y_real_d = [dual_HKZ_log_tail_volume(hkz_dict[i]["B_hkz"], i,k_dim)[0] for i in range(60,73)]
-    y_heur_d = [k_dim * math.log(math.sqrt(k_dim/i)) + k_dim * (-math.log(volume)) / i for i in range(60,73)]
+    y_real_d = [dual_HKZ_log_tail_volume(hkz_dict[i]["B_hkz"], i,k_dim)[0] for i in range(60,60+count+1)]
+    y_heur_d = [k_dim * math.log(math.sqrt(k_dim/i)) + k_dim * (-math.log(volume)) / i for i in range(60,60+count+1)]
 
-    plt.plot(x,y_real_d, label="real",marker="^", markersize=3, linewidth=1.8, color="blue")
-    plt.plot(x,y_heur_d, label="heur",marker="s", markersize=3, linewidth=1.8, color="red")
+    plt.plot(x_dim,y_real_d, label="real",marker="^", markersize=3, linewidth=1.8, color="blue")
+    plt.plot(x_dim,y_heur_d, label="heur",marker="s", markersize=3, linewidth=1.8, color="red")
     
     # grid behind lines
     ax = plt.gca()
@@ -246,3 +258,4 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.savefig(f"Result from Fixed k={k_dim}.png", dpi=300, bbox_inches="tight")
     plt.show()
+    plt.close()
