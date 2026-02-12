@@ -39,10 +39,8 @@ Each folder also contains a dedicated README with more details.
 
 ### Chi-square validation for normalized tail projection
 
-We test the statistic
-\[
-S \;=\; \|\mathrm{proj}_{U_{\mathrm{tail}}}(t)\|^2 / \sigma_{\mathrm{eff}}^2
-\]
+We test the statistic: S = ||proj_{U_tail}(t)||^2 / sigma_eff^2
+
 and compare the empirical CDF of \(S\) against the model CDF \(\chi^2_\tau\), for both CBD- and DG-sampled integer vectors.
 
 **CBD test vectors**  
