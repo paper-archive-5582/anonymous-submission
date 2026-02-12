@@ -10,6 +10,11 @@ from fpylll.algorithms.bkz2 import BKZReduction as BKZ2
 
 from sage.all import randint
 from utility import cbd_eta, dgb_sigma
+from sage.all import randint, ZZ, matrix
+from utility import (
+   cbd_eta, dgb_sigma,
+   find_k, qr_R_from_row_basis, numpy_to_im, unimodular_invers_Z,
+)
 
 # 0. Make LWE sample
 def gen_LWE_sample(n, m, q, Xs = "Gaussian", Xe = "Gaussian"):
