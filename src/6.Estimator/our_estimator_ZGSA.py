@@ -1,5 +1,4 @@
 import math
-from sage.all import RR, ZZ, binomial, cached_function
 
 # -----------------------------
 # Given cost/quality primitives
@@ -68,9 +67,6 @@ def HKZ_time(beta):
     return math.log(2.0 ** (a * (beta - d4f(beta)) + b), 2)
 
 
-# --------------------------------------------
-# Your derived pieces: find k and check success
-# --------------------------------------------
 
 def find_k_for_time_match(beta, dim, k_max=None, tol=1e-9):
     """
@@ -95,41 +91,125 @@ def find_k_for_time_match(beta, dim, k_max=None, tol=1e-9):
     raise RuntimeError(f"Could not find k up to k_max={k_max} for beta={beta}, dim={dim}.")
 
 
-def success_rhs(beta, k, dim):
+
+
+# ---------- ZGSA (Z-shape) building blocks ----------
+
+def gh_dim1(d: float) -> float:
+    return math.sqrt(d / (2.0 * math.pi * math.e))
+
+def alpha_beta(beta: int) -> float:
+    beta = float(beta)
+    if beta <= 1:
+        raise ValueError("beta must be >= 2")
+    return gh_dim1(beta) ** (2.0 / (beta - 1.0))
+
+def zgsa_m(logq: float, beta: int) -> float:
+    # m = 1/2 + ln(q) / (2 ln(alpha_beta))
+    #lnq = log2(q) / log2(e)
+    lnq = float(logq / math.log(math.e, 2.0))
+    a = alpha_beta(beta)
+    return 0.5 + lnq / (2.0 * math.log(a))
+
+def zgsa_bstar_log_norm(i: int, d: int, r: int, logq: float, beta: int) -> float:
     """
-    Compute RHS of your success condition:
-
-    sigma < sqrt(beta)/(2*pi*e) * (sqrt(t))^{-k/t*(ln t/beta)} * delta_beta^{-n - m + k + beta*k/t}
-
-    where:
-      t = beta + k
-      delta_beta = delta_0f(beta)
-      d = dim  (we take dim = n+m+1 per your statement)
+    ZGSA Z-shape:
+      q                                     if i <= r - m
+      sqrt(q) * alpha_beta^{(d-1-2i)/2}      if r - m < i < r + m - 1
+      1                                     if i >= r + m - 1
     """
-    beta_f = float(beta)
-    k_f = float(k)
-    d = float(dim)
+    if not (0 <= i < d):
+        raise IndexError("i out of range")
+    if not (0 <= r <= d):
+        raise ValueError("r must satisfy 0 <= r <= d")
+    q = float(2.0 ** logq)
+    if q <= 0:
+        raise ValueError("q must be > 0")
 
-    t = beta_f + k_f
+    a = alpha_beta(beta)
+    m = zgsa_m(logq, beta)
+
+    left  = r - m
+    right = r + m - 1.0
+
+    if i <= left:
+        return logq / math.log(math.e, 2.0)
+    if i >= right:
+        return 0.0
+
+    exp_ = (float(d) - 1.0 - 2.0 * float(i)) / 2.0
+    return 0.5*(logq / math.log(math.e, 2.0)) + exp_ * math.log(a)
+
+def zgsa_profile_zshape(d: int, r: int, logq: float, beta: int):
+    return [zgsa_bstar_log_norm(i, d, r, logq, beta) for i in range(d)]
+
+def tail_logdet_from_log_profile(log_profile, t: int) -> float:
+    """log( Π_{j=d-t}^{d-1} ||b_j^*|| ) computed safely."""
+    if t <= 0 or t > len(log_profile):
+        raise ValueError("invalid t")
+    s = 0.0
+    for x in log_profile[-t:]:
+        # x is positive by construction
+        s += float(x)
+    return s
+
+
+# ---------- Your "improved" factor (keep yours, but log-safe) ----------
+
+def A_extra_log(beta: int, k: int, delta_beta: float) -> float:
+    """
+    log(A_extra) where
+      A_extra = (sqrt(t)**(-k/t *ln t/beta)  * delta_beta^{ beta*k/t}
+    """
+    beta = float(beta)
+    k = float(k)
+    t = beta + k
     if t <= 1:
         return 0.0
 
-    delta_beta = float(delta_0f(beta_f))
-    # log is natural log here
-    logt = math.log(t)
-    if logt <= 0:
-        return 0.0
+    term1 = math.sqrt(k/t)**(k/t)
+    if term1 <= 0:
+        return float("-inf")
+
+    logA1 = math.log(math.sqrt(k/t)**(k/t))
+    logA2 = ( (beta * k / t)) * math.log(float(delta_beta))
+    return logA1 + logA2
 
 
-    term1 = math.log(math.sqrt(beta_f) / (2.0 * math.pi * math.e), 2.0)
-    #term2 = 0.5 * (-k_f / t * math.log((t/ beta_f)) ) * math.log(t, 2.0)  
-    term2 = 0.5 * (k_f/t) * math.log(k_f/t, 2.0)
-    exponent = (-d + k_f + (beta_f * k_f / t))
-    term3 = exponent * math.log(delta_beta , 2.0)
-    #term4 = term2 * (delta_beta ** (beta_f * k_f / t))
+# ---------- ZGSA-based sigma threshold ----------
+
+def sigma_threshold_zgsa(beta: int, k: int, d: int, r: int, logq: float,
+                         delta_beta: float,
+                         use_improved: bool = True):
+    """
+    Base threshold (log):
+        log(threshold_base) = (1/t)*log(det_tail) - 1/2*log(2πe)
+    where det_tail = product of last t GS norms from ZGSA profile.
+    Then optionally add log(A_extra).
+    """
+    beta_i = int(beta)
+    k_i = int(k)
+    d_i = int(d)
+    r_i = int(r)
+    #q_f = float(q)
+
+    t = beta_i + k_i
+    log_prof = zgsa_profile_zshape(d_i, r_i, logq, beta_i)
+    log_det_tail = tail_logdet_from_log_profile(log_prof, t)
+
+    log_base = (log_det_tail / float(t)) - 0.5 * math.log(2.0 * math.pi * math.e)
+    log_factor = A_extra_log(beta_i, k_i, delta_beta) if use_improved else 0.0
+    log_thr = RR(log_base + log_factor)
+
     
-    return term1 + term2 + term3 
-
+    return {
+        "t": t,
+        "log_det_tail": log_det_tail,
+        "log_base_threshold": log_base,
+        "log_A_extra": log_factor,
+        "log_threshold": log_thr,
+        "profile": log_prof,  
+    }
 
 
 def lhs_for_secret_dist(s_dist: str, n: int, m: int, sigma_e: float, dim: int, sigma_s: float) -> float:
@@ -148,8 +228,11 @@ def lhs_for_secret_dist(s_dist: str, n: int, m: int, sigma_e: float, dim: int, s
     if s in ["same", "orig", "original"]:
         return float(sigma_e)
 
-    if s in ["binary", "ternary"]:
-        return math.sqrt(n *  (sigma_s**2)  + 1.0 + m * (sigma_e**2) ) / math.sqrt(dim)
+    if s == "binary":
+        return math.sqrt(n + 1.0 + m * (sigma_e**2) ) / math.sqrt(dim)
+
+    if s == "ternary":
+        return math.sqrt(n * (sigma_s ** 2) + 1.0 + m * (sigma_e**2) ) / math.sqrt(dim)
 
     if s in ["gaussian", "dg", "discrete_gaussian", "discrete-gaussian"]:
         return math.sqrt((sigma_s ** 2) * n + 1.0 + (sigma_e ** 2) * m) / math.sqrt(dim)
@@ -158,266 +241,86 @@ def lhs_for_secret_dist(s_dist: str, n: int, m: int, sigma_e: float, dim: int, s
 
 
 
-def find_min_beta(n, logq, sigma,
-                  beta_min=2, beta_max=500,
-                  k_max=None,
-                  require_beta_ge_40=False, s_dist= "same", sigma_s = 3.19):
+
+# ---------- Wrapper search: minimal beta ----------
+
+def find_min_beta_zgsa(n, m, logq, sigma,
+                      beta_min=2, beta_max=900,
+                      k_max=None,
+                      require_beta_ge_40=False,
+                      use_improved=True,
+                      s_dist = "same",
+                      sigma_s = 3.19
+                      ):
     """
-    Search the smallest beta such that the success condition holds,
-    with k determined by time-matching:
-      T_BKZ(beta, n+m+1) = 2*T_HKZ(beta+k).
-
-    Inputs:
-      - n, m, logq, sigma: provided by you (logq currently unused in the inequality you gave)
-      - beta_min/beta_max: search range
-      - require_beta_ge_40: if True, starts search at max(beta_min, 40)
-        (sometimes you may want this because delta_0f has a step table up to 40)
-
-    Returns dict with beta, k, t, rhs, and the two times.
+    Conventions (as you used):
+      q = 2^{logq}
+      m chosen by your heuristic using delta_0f(beta)
+      d = n + m + 1
+      r = m   (# of q-vectors; typical q-ary embedding)
+    Compare in log-domain: log(sigma) < log(threshold).
     """
-    
+    n = int(n)
+    m = int(m)
+    logq = float(logq)
+    sigma = lhs_for_secret_dist(s_dist, n, m, sigma, n+m+1, sigma_s)
+    if sigma <= 0:
+        raise ValueError("sigma must be > 0")
+    log_sigma = math.log(sigma)
 
-    start = beta_min
+    start = int(beta_min)
     if require_beta_ge_40:
         start = max(start, 40)
 
-    # Compute scaling factor w = σ_s / σ_e or σ_s / σ_e or 1 
-    if sigma[0] > sigma[1]:
-        w = sigma[0] / sigma[1]
-        sigma = sigma[0]
-    elif sigma[0] < sigma[1]:
-        w = sigma[0] / sigma[1]
-        sigma = sigma[1]
-    else:
-        w = 1
-        sigma = math.sqrt(sigma[1])
+    for beta in range(start, int(beta_max) + 1):
+        delta_beta = float(delta_0f(beta))
+        ld = math.log(delta_beta, 2)
+        if ld <= 0:
+            continue
+        width = round(zgsa_m(logq, beta)*2-1)
+        # your m heuristic        
+        if m <= 0:
+            continue
 
-    for beta in range(int(start), int(beta_max) + 1):
-        delta_0 = delta_0f(beta)
-        m = round(math.sqrt((n+1)*logq/ math.log(delta_0,2) ) - n-1)
-        dim = int(n + m + 1)
-        k = find_k_for_time_match(beta, dim, k_max=k_max)
-        # Using Bai-Galbraith embedding, the determinant of lattice is q^{m/d}w^{(n+1)/d}
-        rhs = success_rhs(beta, k, dim) + (logq *m /dim + math.log2(w)*(n+1)/dim)
-        lhs = math.log(lhs_for_secret_dist(s_dist, n, m, sigma, dim, sigma_s), 2.0)
-        if lhs < rhs:
-            return {
-              "beta": beta,
-                "k": k,
-                "t": beta + k,
-                "rhs": rhs,
-                "lhs": lhs,
-                "sigma_e": sigma,
-                "s_dist": s_dist,
-                "m": m,
-                "dim": dim,
-                "T_BKZ": BKZ_time(beta, dim),
-                "T_HKZ": HKZ_time(beta + k),
-                "delta_beta": delta_0f(beta),
-                "Total_cost": RR(math.log(2**BKZ_time(beta, dim) + 2*2**(HKZ_time(beta+k)),2))
-            }
+        d = int(n + m + 1)
+        r = int(m)
+        q = 2.0 ** logq
+
+        if d < width:
+            raise ValueError("d must be bigger tahn width")
+        
+        k = find_k_for_time_match(beta, width, k_max=k_max)
+
+        info = sigma_threshold_zgsa(beta, k, d, r, logq, delta_beta, use_improved=1)
+        
+        if log_sigma < info["log_threshold"]:
+            if zgsa_bstar_log_norm( n+m-beta-k, d, r, logq, beta) > 2*2**log_sigma:
+                return {
+                    "beta": beta,
+                    "k": k,
+                    "t": info["t"],
+                    "n": n,
+                    "m": m,
+                    "d": d,
+                    "r": r,
+                    "q": q,
+                    "w": width,
+                    "sigma": sigma,
+                    "log_threshold": info["log_threshold"],
+                    "log_base_threshold": info["log_base_threshold"],
+                    "log_A_extra": info["log_A_extra"],
+                    "delta_beta": delta_beta,
+                    "T_BKZ_log2": BKZ_time(beta, width),
+                    "T_HKZ_log2": HKZ_time(beta + k),
+                    "Final_cost": math.log(2**BKZ_time(beta,width) + 2*2**HKZ_time(beta + k),2)
+                }
 
     return None
 
 
+n = 65536
+m = 65536
+logq = 1747
+sigma = math.sqrt(2/3)
 
-
-#========================================================================================== bdd
-def success_rhs_bdd(beta, k, dim):
-    """
-    Compute RHS of your success condition:
-
-    sigma < sqrt(beta)/(2*pi*e) * (beta/(t*log t))^{k/(2*t)} * delta_beta^{-d  + k + beta*k/t}
-
-    where:
-      t = beta + k
-      delta_beta = delta_0f(beta)
-      d = dim  (we take dim = n+m+1 per your statement)
-    """
-    beta_f = float(beta)
-    k_f = float(k)
-    d = float(dim)
-
-    t = beta_f + k_f
-    if t <= 1:
-        return 0.0
-
-    delta_beta = float(delta_0f(beta_f))
-    # log is natural log here
-    logt = math.log(t)
-    if logt <= 0:
-        return 0.0
-
-    term1 = math.log(math.sqrt(beta_f) / (2.0 * math.pi * math.e), 2.0)
-    term2 = 0
-    exponent = (-d + k_f )
-    term3 = exponent * math.log(delta_beta, 2.0)
-    #term4 = term2 * (delta_beta ** (beta_f * k_f / t))
-    return term1 + term2 + term3
-
-
-def find_min_beta_bdd(n, logq, sigma,
-                  beta_min=2, beta_max=500,
-                  k_max=None,
-                  require_beta_ge_40=False, s_dist= "same", sigma_s = 3.19):
-    """
-    Search the smallest beta such that the success condition holds,
-    with k determined by time-matching:
-      T_BKZ(beta, n+m+1) = T_HKZ(beta+k).
-
-    Inputs:
-      - n, m, logq, sigma: provided by you (logq currently unused in the inequality you gave)
-      - beta_min/beta_max: search range
-      - require_beta_ge_40: if True, starts search at max(beta_min, 40)
-        (sometimes you may want this because delta_0f has a step table up to 40)
-
-    Returns dict with beta, k, t, rhs, and the two times.
-    """
-    
-
-    start = beta_min
-    if require_beta_ge_40:
-        start = max(start, 40)
-
-    # Compute scaling factor w = σ_s / σ_e or σ_s / σ_e or 1 
-    if sigma[0] > sigma[1]:
-        w = sigma[0] / sigma[1]
-        sigma = sigma[0]
-    elif sigma[0] < sigma[1]:
-        w = sigma[0] / sigma[1]
-        sigma = sigma[1]
-    else:
-        w = 1
-        sigma = sigma[1]
-    
-    for beta in range(int(start), int(beta_max) + 1):
-        delta_0 = delta_0f(beta)
-        m = round(math.sqrt((n+1)*logq/ math.log(delta_0,2) ) - n-1)
-        dim = int(n + m + 1)
-        k = find_k_for_time_match(beta, dim, k_max=k_max)
-        # Using Bai-Galbraith embedding, the determinant of lattice is q^{m/d}w^{(n+1)/d}
-        rhs = success_rhs_bdd(beta, k, dim) + (logq *m /dim + math.log2(w)*(n+1)/dim)
-        lhs = math.log(lhs_for_secret_dist(s_dist, n, m, sigma, dim, sigma_s), 2.0)
-        if lhs < rhs:
-            return {
-                "beta": beta,
-                "k": k,
-                "t": beta + k,
-                "rhs": rhs,
-                "sigma": sigma,
-                "dim": dim,
-                "T_BKZ": BKZ_time(beta, dim),
-                "T_HKZ": HKZ_time(beta + k),
-                "delta_beta": delta_0f(beta),
-            }
-
-    return None
-
-
-#========================================================================================== usvp
-def success_rhs_usvp(beta, k, dim):
-    """
-    Compute RHS of your success condition:
-
-    sigma < sqrt(beta)/(2*pi*e) * (beta/(t*log t))^{k/(2*t)} * delta_beta^{-d  + k + beta*k/t}
-
-    where:
-      t = beta + k
-      delta_beta = delta_0f(beta)
-      d = dim  (we take dim = n+m+1 per your statement)
-    """
-    beta_f = float(beta)
-    k_f = float(k)
-    d = float(dim)
-
-    t = beta_f + k_f
-    if t <= 1:
-        return 0.0
-
-    delta_beta = float(delta_0f(beta_f))
-    # log is natural log here
-    logt = math.log(t)
-    if logt <= 0:
-        return 0.0
-
-    term1 = math.log(math.sqrt(beta_f) / (2.0 * math.pi * math.e), 2.0)
-    term2 = 0
-    exponent = (-d)
-    term3 = exponent * math.log(delta_beta, 2.0)
-    #term4 = term2 * (delta_beta ** (beta_f * k_f / t))
-    return term1 + term2 + term3
-
-
-
-def find_min_beta_usvp(n, logq, sigma,
-                  beta_min=2, beta_max=500,
-                  k_max=None,
-                  require_beta_ge_40=False, s_dist= "same", sigma_s = 3.19):
-    """
-    Search the smallest beta such that the success condition holds,
-    with k determined by time-matching:
-      T_BKZ(beta, n+m+1) = T_HKZ(beta+k).
-
-    Inputs:
-      - n, m, logq, sigma: provided by you (logq currently unused in the inequality you gave)
-      - beta_min/beta_max: search range
-      - require_beta_ge_40: if True, starts search at max(beta_min, 40)
-        (sometimes you may want this because delta_0f has a step table up to 40)
-
-    Returns dict with beta, k, t, rhs, and the two times.
-    """
-    
-
-    start = beta_min
-    if require_beta_ge_40:
-        start = max(start, 40)
-
-    # Compute scaling factor w = σ_s / σ_e or σ_s / σ_e or 1 
-    if sigma[0] > sigma[1]:
-        w = sigma[0] / sigma[1]
-        sigma = sigma[0]
-    elif sigma[0] < sigma[1]:
-        w = sigma[0] / sigma[1]
-        sigma = sigma[1]
-    else:
-        w = 1
-        sigma = sigma[1]
-    
-    for beta in range(int(start), int(beta_max) + 1):
-        delta_0 = delta_0f(beta)
-        m = round(math.sqrt((n+1)*logq/ math.log(delta_0,2) ) - n-1)
-        dim = int(n + m + 1)
-        k = find_k_for_time_match(beta, dim, k_max=k_max)
-        # Using Bai-Galbraith embedding, the determinant of lattice is q^{m/d}w^{(n+1)/d}
-        rhs = success_rhs_usvp(beta, k, dim) + (logq *m /dim + math.log2(w)*(n+1)/dim)
-        lhs = math.log(lhs_for_secret_dist(s_dist, n, m, sigma, dim, sigma_s), 2.0)
-        if lhs < rhs:
-            return {
-                "beta": beta,
-                "k": k,
-                "t": beta + k,
-                "rhs": rhs,
-                "sigma": sigma,
-                "dim": dim,
-                "T_BKZ": BKZ_time(beta, dim),
-                "T_HKZ": HKZ_time(beta + k),
-                "delta_beta": delta_0f(beta),
-            }
-
-    return None
-
-
-
-
-# -----------------------------
-# Example usage (edit numbers)
-# -----------------------------
-if __name__ == "__main__":
-   
-    n =  256*4
-    logq = math.log(8380417,2)
-    # σ = (σ_s, σ_e) 
-    sigma = (1, 1)
-    #find_min_beta_usvp(n, logq, sigma, beta_min=2, beta_max=900, require_beta_ge_40=False)
-    #find_min_beta_bdd(n, logq, sigma, beta_min=2, beta_max=900, require_beta_ge_40=False)
-    print(find_min_beta(n, logq, sigma, beta_min=350, beta_max=550, require_beta_ge_40=False))
+find_min_beta_zgsa(n,m,logq,sigma,beta_min=300, beta_max=950, k_max=None,require_beta_ge_40=True, s_dist = "ternary", sigma_s = math.sqrt(2/3))
