@@ -3,6 +3,7 @@ import re
 import time
 import subprocess
 import numpy as np
+import mpmath as mp
 import random
 import matplotlib.pyplot as plt
 from fpylll import IntegerMatrix, GSO, FPLLL, BKZ, LLL
@@ -45,11 +46,6 @@ def cal_GSO_basis(basis):
 
     return GSO_basis
 
-GSO_basis = cal_GSO_basis(B_bkz)
-
-# -----------------------------
-# Helpers: convert basis to numpy
-# -----------------------------
 def _basis_to_numpy_rows(B):
     """
     Convert a reduced basis to a numpy float matrix A (rows are basis vectors).
