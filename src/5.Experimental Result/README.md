@@ -37,7 +37,11 @@ using both CBD- and DG-sampled integer test vectors.
 
 - `Result/`  
   Experimental plots (including chi-square validation figures shown below).
+### CBD test vectors
+![Empirical CDF of S(cbd) vs chi-square model](Result/Experiement_Result_cbd.png)
 
+### DG test vectors
+![Empirical CDF of S(dg) vs chi-square model](Result/Experiment_Result_dg.png)
 ---
 
 ## Requirements
