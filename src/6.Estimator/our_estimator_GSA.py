@@ -1,4 +1,5 @@
 import math
+from sage.all import RR, ZZ, binomial, cached_function
 
 # -----------------------------
 # Given cost/quality primitives
@@ -213,7 +214,7 @@ def find_min_beta(n, logq, sigma,
                 "T_BKZ": BKZ_time(beta, dim),
                 "T_HKZ": HKZ_time(beta + k),
                 "delta_beta": delta_0f(beta),
-                "Total_cost": RR(log(2**BKZ_time(beta, dim) + 2*2**(HKZ_time(beta+k)),2))
+                "Total_cost": RR(math.log(2**BKZ_time(beta, dim) + 2*2**(HKZ_time(beta+k)),2))
             }
 
     return None
@@ -412,23 +413,11 @@ def find_min_beta_usvp(n, logq, sigma,
 # Example usage (edit numbers)
 # -----------------------------
 if __name__ == "__main__":
-    n = 2048
-    logq = 55
-    sigma = 3.19
-
-    ans = find_min_beta(n, logq, sigma, beta_min=2, beta_max=600, require_beta_ge_40=False, s_dist = "dg", sigma_s = 3.19)
-    if ans is None:
-        print("No beta found in the search range.")
-    else:
-        print(ans)
-
-
-    
+   
     n =  256*4
-    logq = log(8380417,2)
+    logq = math.log(8380417,2)
     # σ = (σ_s, σ_e) 
     sigma = (1, 1)
     #find_min_beta_usvp(n, logq, sigma, beta_min=2, beta_max=900, require_beta_ge_40=False)
     #find_min_beta_bdd(n, logq, sigma, beta_min=2, beta_max=900, require_beta_ge_40=False)
-    find_min_beta(n, logq, sigma, beta_min=350, beta_max=550, require_beta_ge_40=False)
-
+    print(find_min_beta(n, logq, sigma, beta_min=350, beta_max=550, require_beta_ge_40=False))
