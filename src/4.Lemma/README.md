@@ -73,7 +73,3 @@ The plotting loop appears here. :contentReference[oaicite:7]{index=7}
 - External `fplll` binary  
   The script invokes `../local/bin/fplll`; adjust the path for your environment. :contentReference[oaicite:8]{index=8}
 
-Install Python deps:
-```bash
-pip install numpy matplotlib
-
