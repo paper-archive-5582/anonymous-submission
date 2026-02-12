@@ -3,6 +3,7 @@ import math
 import random
 import numpy as np
 import subprocess
+import matplotlib.pyplot as plt
 
 def random_orthonormal_basis(n: int, k: int | None = None, seed: int | None = None) -> np.ndarray:
     """
@@ -196,3 +197,50 @@ if __name__ == "__main__":
 
     print(f"Logscale_Tail_Volume:{log_tail_volume}")
     print(f"Heuristic Lemma5 : {heu}")
+
+    # plotting
+    # 1. Fixed dim=60 and k ∈{1, ..., 30}
+    x_k = np.linspace(1,30,30)
+    dim_k = 60
+    y_real_k = [dual_HKZ_log_tail_volume(hkz_dict[dim_k]["B_hkz"], dim_k,i)[0] for i in range(1,31)]
+    y_heur_k = [i * math.log(math.sqrt(i/dim_k)) + i * (-math.log(volume)) / d for i in range(1,31)]
+
+    plt.plot(x, y_real_k, label="real",marker="^", markersize=3, linewidth=1.8, color="blue")
+    plt.plot(x, y_heur_k, label="heur",marker="s", markersize=3, linewidth=1.8, color="red")
+    
+    # grid behind lines
+    ax = plt.gca()
+    ax.set_axisbelow(True)           
+    ax.grid(True, which="major", linestyle="--", alpha=0.5)
+    
+    ax.minorticks_on()
+    ax.grid(True, which="minor", linestyle=":", alpha=0.25)
+    
+    plt.rc('xtick', labelsize=15) 
+    plt.rc('ytick', labelsize=15)
+    plt.legend(fontsize = 20)
+    plt.tight_layout()
+    plt.show
+
+    # 2. Fixed k=10 and dim ∈ {60, ..., 72}
+    x_dim = np.linspace(60,72,13)
+    k_dim = 10
+    y_real_d = [dual_HKZ_log_tail_volume(hkz_dict[i]["B_hkz"], i,k_dim)[0] for i in range(60,73)]
+    y_heur_d = [k_dim * math.log(math.sqrt(k_dim/i)) + k_dim * (-math.log(volume)) / i for i in range(60,73)]
+
+    plt.plot(x,y_real_d, label="real",marker="^", markersize=3, linewidth=1.8, color="blue")
+    plt.plot(x,y_heur_d, label="heur",marker="s", markersize=3, linewidth=1.8, color="red")
+    
+    # grid behind lines
+    ax = plt.gca()
+    ax.set_axisbelow(True)           
+    ax.grid(True, which="major", linestyle="--", alpha=0.5)
+    
+    ax.minorticks_on()
+    ax.grid(True, which="minor", linestyle=":", alpha=0.25)
+    
+    plt.rc('xtick', labelsize=15)
+    plt.rc('ytick', labelsize=15)
+    plt.legend(fontsize = 20)
+    plt.tight_layout()
+    plt.show
