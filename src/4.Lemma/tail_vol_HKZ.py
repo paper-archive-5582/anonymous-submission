@@ -220,7 +220,8 @@ if __name__ == "__main__":
     plt.rc('ytick', labelsize=15)
     plt.legend(fontsize = 20)
     plt.tight_layout()
-    plt.show
+    plt.savefig(f"Result from Fixed dim={dim_k}.png", dpi=300, bbox_inches="tight")
+    plt.show()
 
     # 2. Fixed k=10 and dim ∈ {60, ..., 72}
     x_dim = np.linspace(60,72,13)
@@ -243,4 +244,5 @@ if __name__ == "__main__":
     plt.rc('ytick', labelsize=15)
     plt.legend(fontsize = 20)
     plt.tight_layout()
-    plt.show
+    plt.savefig(f"Result from Fixed k={k_dim}.png", dpi=300, bbox_inches="tight")
+    plt.show()
