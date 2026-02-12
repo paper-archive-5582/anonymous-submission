@@ -3,8 +3,8 @@
 This folder contains two Python scripts that estimate the minimum BKZ block size **β**
 required for (toy / modeled) primal-embedding style lattice attacks, using either:
 
-- **GSA (Geometric Series Assumption)**: models the Gram–Schmidt spectrum by a global geometric progression.
-- **ZGSA (Z-shaped GSA)**: models the spectrum with a *q-limited head* and a *flattened tail* (often observed in q-ary / primal-embedding lattices), which can yield a less stringent tail success condition than plain GSA.
+- **GSA (Geometric Series Assumption)**: models the log Gram–Schmidt profile by a global geometric progression.
+- **ZGSA (Z-shaped GSA)**: models the log profile with a *q-limited head* and a *flattened tail* (often observed in q-ary / primal-embedding lattices), which can yield a less stringent tail success condition than plain GSA.
 
 ## Files
 
