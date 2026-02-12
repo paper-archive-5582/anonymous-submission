@@ -70,5 +70,5 @@ The plotting loop appears here.
 - Python 3.10+
 - `numpy`, `matplotlib`
 - External `fplll` binary  
-  The script invokes `../local/bin/fplll`; adjust the path for your environment. :contentReference[oaicite:8]{index=8}
+  The script invokes `../local/bin/fplll`; adjust the path for your environment.
 
