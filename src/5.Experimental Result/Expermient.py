@@ -213,7 +213,7 @@ def validate_tail_projection_chi2(
         plt.legend(loc="lower right")
         plt.tight_layout()
         plt.savefig(f"Result_from_{dist}.png", dpi=300, bbox_inches="tight")
-        plt.show
+        plt.show()
 
     return out
 
