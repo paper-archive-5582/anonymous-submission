@@ -30,8 +30,8 @@ Given an HKZ-reduced basis `B_hkz`, the script computes a QR decomposition and u
 
 exactly as implemented in the code. :contentReference[oaicite:3]{index=3}
 
-> ⚠️ Note on indexing/convention.  
-> The current implementation uses indices `i = 0..k-1` (i.e., the *first* `k` diagonal entries).  
+> Note on indexing/convention.  
+> The current implementation uses indices `i = 0..k-1` (i.e., the first `k` diagonal entries).  
 > A code comment explicitly notes that, depending on the “tail” convention, one may need to use the **last** `k` entries instead. :contentReference[oaicite:4]{index=4}
 
 ### 2) “heur” (heuristic expression)
