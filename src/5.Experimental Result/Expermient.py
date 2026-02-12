@@ -221,3 +221,7 @@ def validate_tail_projection_chi2(
     return out
 
 if __name__=="__main__":
+    from compute_final_basis import 
+    
+    res = validate_tail_projection_chi2(B_bkz, tau=beta+k_mid, dist="dg", N=500, seed=1)
+    res = validate_tail_projection_chi2(B_bkz, tau=beta+k_mid, dist="cbd", N=500, seed=1)
