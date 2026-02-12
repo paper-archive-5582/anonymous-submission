@@ -1,4 +1,5 @@
 import math
+from sage.all import RR, ZZ, binomial, cached_function
 
 # -----------------------------
 # Given cost/quality primitives
@@ -122,10 +123,7 @@ def zgsa_bstar_log_norm(i: int, d: int, r: int, logq: float, beta: int) -> float
         raise IndexError("i out of range")
     if not (0 <= r <= d):
         raise ValueError("r must satisfy 0 <= r <= d")
-    q = float(2.0 ** logq)
-    if q <= 0:
-        raise ValueError("q must be > 0")
-
+    
     a = alpha_beta(beta)
     m = zgsa_m(logq, beta)
 
@@ -284,11 +282,11 @@ def find_min_beta_zgsa(n, m, logq, sigma,
 
         d = int(n + m + 1)
         r = int(m)
-        q = 2.0 ** logq
+        #q = 2.0 ** logq
 
         if d < width:
-            raise ValueError("d must be bigger tahn width")
-        
+            raise ValueError("d must bigger than width")
+
         k = find_k_for_time_match(beta, width, k_max=k_max)
 
         info = sigma_threshold_zgsa(beta, k, d, r, logq, delta_beta, use_improved=1)
@@ -303,7 +301,7 @@ def find_min_beta_zgsa(n, m, logq, sigma,
                     "m": m,
                     "d": d,
                     "r": r,
-                    "q": q,
+                    "logq": logq,
                     "w": width,
                     "sigma": sigma,
                     "log_threshold": info["log_threshold"],
@@ -317,10 +315,13 @@ def find_min_beta_zgsa(n, m, logq, sigma,
 
     return None
 
-
-n = 65536
-m = 65536
-logq = 1747
-sigma = math.sqrt(2/3)
-
-find_min_beta_zgsa(n,m,logq,sigma,beta_min=300, beta_max=950, k_max=None,require_beta_ge_40=True, s_dist = "ternary", sigma_s = math.sqrt(2/3))
+# -----------------------------
+# Example usage (edit numbers)
+# -----------------------------
+if __name__ == "__main__":
+    n = 1024
+    m = 1024
+    logq = 26
+    sigma = math.sqrt(2/3)
+    
+    print(find_min_beta_zgsa(n,m,logq,sigma,beta_min=300, beta_max=950, k_max=None,require_beta_ge_40=True, s_dist = "dg", sigma_s = math.sqrt(2/3)))
