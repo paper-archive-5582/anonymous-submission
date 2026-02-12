@@ -73,24 +73,3 @@ and compare the empirical CDF of \(S\) against the model CDF \(\chi^2_\tau\), fo
   Some parts may assume Sage-style numeric types; run under Sage or replace with standard Python equivalents.
 
 ---
-
-## Quickstart (minimal)
-
-> **Note:** Some scripts include research-code scaffolding and may require minor local edits (e.g., binary paths, a couple of typos in `__main__`). The commands below avoid relying on the `__main__` blocks.
-
-### 1) Run chi-square validation (uses the reduction pipeline)
-
-From repo root:
-
-```bash
-cd "src/5.Experimental Result"
-
-sage -python -c "from compute_final_basis import compute_final_basis; \
-from utility import find_k; \
-from Expermient import validate_tail_projection_chi2; \
-n,m,q,beta = 100,100,257,40; \
-B = compute_final_basis(n,m,q,beta); \
-d = n+m+1; k = find_k(beta, d); tau = beta + k; \
-print('d=', d, 'tau=', tau); \
-validate_tail_projection_chi2(B, tau=tau, dist='cbd', N=500, seed=1, make_plot=True); \
-validate_tail_projection_chi2(B, tau=tau, dist='dg',  N=500, seed=1, make_plot=True)"
