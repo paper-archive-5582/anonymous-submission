@@ -28,17 +28,17 @@ Given an HKZ-reduced basis `B_hkz`, the script computes a QR decomposition and u
 
 - `log_tail_volume = sum_{i=0}^{k-1} -log(R_ii)`
 
-exactly as implemented in the code. :contentReference[oaicite:3]{index=3}
+exactly as implemented in the code. 
 
 > Note on indexing/convention.  
 > The current implementation uses indices `i = 0..k-1` (i.e., the first `k` diagonal entries).  
-> A code comment explicitly notes that, depending on the “tail” convention, one may need to use the **last** `k` entries instead. :contentReference[oaicite:4]{index=4}
+> A code comment explicitly notes that, depending on the “tail” convention, one may need to use the **last** `k` entries instead. 
 
 ### 2) “heur” (heuristic expression)
 
 The heuristic baseline plotted in red is computed as
 
-- `heu = k * log(sqrt(k/d)) + k * (-log(volume))/d` :contentReference[oaicite:5]{index=5}
+- `heu = k * log(sqrt(k/d)) + k * (-log(volume))/d`
 
 ---
 
@@ -49,8 +49,7 @@ The heuristic baseline plotted in red is computed as
 - Setting: `dim = 60`, `k = 1..30`
 - Blue: `real`, Red: `heur`
 
-The plotting loop appears here. :contentReference[oaicite:6]{index=6}
-
+The plotting loop appears here.
 ![Fixed dim (d=60), varying k](Result/Lemma3_fixed_dim.png)
 
 ### B. Fixed k, varying dimension
@@ -58,7 +57,7 @@ The plotting loop appears here. :contentReference[oaicite:6]{index=6}
 - Setting: `k = 10`, `dim = 60..72`
 - Blue: `real`, Red: `heur`
 
-The plotting loop appears here. :contentReference[oaicite:7]{index=7}
+The plotting loop appears here.
 
 ![Fixed k (k=10), varying dim](Result/Lemma3_fixed_k.png)
 
