@@ -5,14 +5,14 @@ This folder documents an empirical comparison between
 - **real (measured)** log tail-volume behavior after HKZ reduction, and  
 - a **heuristic expression** used as a surrogate bound in our lemma-level analysis.
 
-All plots referenced below are stored in `Result/`. The experiment driver is `tail_vol_HKZ.py`. :contentReference[oaicite:0]{index=0}
+All plots referenced below are stored in `Result/`. The experiment driver is `tail_vol_HKZ.py`.
 
 ---
 
 ## Files
 
 - `tail_vol_HKZ.py`  
-  Generates synthetic lattice bases (via a random orthonormal transform and a GSA-style diagonal profile), runs HKZ reduction by calling an external `fplll` binary, and measures a log tail-volume proxy using the QR `R`-diagonal. :contentReference[oaicite:1]{index=1} :contentReference[oaicite:2]{index=2}
+  Generates synthetic lattice bases (via a random orthonormal transform and a GSA-style diagonal profile), runs HKZ reduction by calling an external `fplll` binary, and measures a log tail-volume proxy using the QR `R`-diagonal.
 
 - `Result/`
   - `Lemma3_fixed_dim.png`
