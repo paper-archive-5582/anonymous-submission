@@ -218,6 +218,8 @@ def validate_tail_projection_chi2(
 
 if __name__=="__main__":
     from compute_final_basis import compute_final_basis
+    from utility import find_k
+    
     # parameter
     n = 100
     m = 100
@@ -226,6 +228,10 @@ if __name__=="__main__":
     
     B_final = computefinal_basis(n, m, q, beta)
 
+    d = n + m + 1
+    k = find_k(beta, d)
+    tau = beta + k
+
     # plotting
-    res = validate_tail_projection_chi2(B_bkz, tau=beta+k_mid, dist="dg", N=500, seed=1)
-    res = validate_tail_projection_chi2(B_bkz, tau=beta+k_mid, dist="cbd", N=500, seed=1)
+    res = validate_tail_projection_chi2(B_final, tau=beta+k_mid, dist="dg", N=500, seed=1)
+    res = validate_tail_projection_chi2(B_final, tau=beta+k_mid, dist="cbd", N=500, seed=1)
