@@ -212,7 +212,8 @@ def validate_tail_projection_chi2(
         plt.rc('axes', labelsize=20)   
         plt.legend(loc="lower right")
         plt.tight_layout()
-        plt.show()
+        plt.savefig(f"Result_from_{dist}.png", dpi=300, bbox_inches="tight")
+        plt.show
 
     return out
 
@@ -226,12 +227,14 @@ if __name__=="__main__":
     q = 257
     beta = 40
     
-    B_final = computefinal_basis(n, m, q, beta)
+    B_final = compute_final_basis(n, m, q, beta)
+
+    print(f"Complete the reduction.")
 
     d = n + m + 1
     k = find_k(beta, d)
     tau = beta + k
 
     # plotting
-    res = validate_tail_projection_chi2(B_final, tau=beta+k_mid, dist="dg", N=500, seed=1)
-    res = validate_tail_projection_chi2(B_final, tau=beta+k_mid, dist="cbd", N=500, seed=1)
+    res = validate_tail_projection_chi2(B_final, tau=beta+k, dist="dg", N=500, seed=1)
+    res = validate_tail_projection_chi2(B_final, tau=beta+k, dist="cbd", N=500, seed=1)
