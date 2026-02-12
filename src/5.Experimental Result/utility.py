@@ -15,7 +15,7 @@ def log2(x):
     :param x: A Sage/Python numeric value.
     :return: log_2(x).
     """
-     return log(x, 2.0)
+    return log(x, 2.0)
 
 def cbd_eta(eta : int):
     """
@@ -140,7 +140,7 @@ def im_to_numpy(A):
     for i in range(m):
         for j in range(n):
             X[i, j] = int(A[i,j])
-    return X.astype(np.int64) if np.max(np.abs(X.astype(object))) < 2 ** 62 else x
+    return X.astype(np.int64) if np.max(np.abs(X.astype(object))) < 2 ** 62 else X
 
 def numpy_to_im(X):
     """
