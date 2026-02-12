@@ -286,6 +286,9 @@ def find_min_beta_zgsa(n, m, logq, sigma,
         r = int(m)
         q = 2.0 ** logq
 
+        if d < width:
+            raise ValueError("d must bigger than width")
+
         k = find_k_for_time_match(beta, width, k_max=k_max)
 
         info = sigma_threshold_zgsa(beta, k, d, r, logq, delta_beta, use_improved=1)
