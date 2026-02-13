@@ -233,7 +233,7 @@ if __name__ == "__main__":
     plt.rc('ytick', labelsize=15)
     plt.legend(fontsize = 20)
     plt.tight_layout()
-    plt.savefig(f"Result from Fixed dim={fixed_dim}.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"Result_from_Fixed_dim_{fixed_dim}.png", dpi=300, bbox_inches="tight")
     plt.show()
     plt.close()
 
@@ -257,6 +257,6 @@ if __name__ == "__main__":
     plt.rc('ytick', labelsize=15)
     plt.legend(fontsize = 20)
     plt.tight_layout()
-    plt.savefig(f"Result from Fixed k={fixed_k}.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"Result_from_Fixed_k_{fixed_k}.png", dpi=300, bbox_inches="tight")
     plt.show()
     plt.close()
