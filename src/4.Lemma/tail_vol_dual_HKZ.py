@@ -184,6 +184,9 @@ if __name__ == "__main__":
     q = 257
     beta = 30
     k=10
+    fixed_dim = 60
+    fixed_k = 10
+    
 
     for d in dim:
         volume = math.pow(q, (d-1)//2)
@@ -212,9 +215,8 @@ if __name__ == "__main__":
     # plotting
     # 1. Fixed dim=60 and k ∈{1, ..., 30}
     x_k = np.linspace(1,30,30)
-    dim_k = 60
-    y_real_k = [dual_HKZ_log_tail_volume(hkz_dict[dim_k]["B_hkz"], dim_k,i)[0] for i in range(1,31)]
-    y_heur_k = [i * math.log(math.sqrt(i/dim_k)) + i * (-math.log(volume)) / d for i in range(1,31)]
+    y_real_k = [dual_HKZ_log_tail_volume(hkz_dict[fixed_dim]["B_hkz"], fixed_dim,i)[0] for i in range(1,31)]
+    y_heur_k = [i * math.log(math.sqrt(i/fixed_dim)) + i * (-math.log(volume)) / d for i in range(1,31)]
 
     plt.plot(x_k, y_real_k, label="real",marker="^", markersize=3, linewidth=1.8, color="blue")
     plt.plot(x_k, y_heur_k, label="heur",marker="s", markersize=3, linewidth=1.8, color="red")
@@ -231,15 +233,14 @@ if __name__ == "__main__":
     plt.rc('ytick', labelsize=15)
     plt.legend(fontsize = 20)
     plt.tight_layout()
-    plt.savefig(f"Result from Fixed dim={dim_k}.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"Result from Fixed dim={fixed_dim}.png", dpi=300, bbox_inches="tight")
     plt.show()
     plt.close()
 
-    # 2. Fixed k=10 and dim ∈ {60, ..., 72}
+    # 2. Fixed k=10 and dim ∈ {60, ..., count+1}
     x_dim = np.linspace(60,60+count,count+1)
-    k_dim = 10
-    y_real_d = [dual_HKZ_log_tail_volume(hkz_dict[i]["B_hkz"], i,k_dim)[0] for i in range(60,60+count+1)]
-    y_heur_d = [k_dim * math.log(math.sqrt(k_dim/i)) + k_dim * (-math.log(volume)) / i for i in range(60,60+count+1)]
+    y_real_d = [dual_HKZ_log_tail_volume(hkz_dict[i]["B_hkz"], i,fixed_k)[0] for i in range(60,60+count+1)]
+    y_heur_d = [fixed_k * math.log(math.sqrt(fixed_k/i)) + fixed_k * (-math.log(volume)) / i for i in range(60,60+count+1)]
 
     plt.plot(x_dim,y_real_d, label="real",marker="^", markersize=3, linewidth=1.8, color="blue")
     plt.plot(x_dim,y_heur_d, label="heur",marker="s", markersize=3, linewidth=1.8, color="red")
@@ -256,6 +257,6 @@ if __name__ == "__main__":
     plt.rc('ytick', labelsize=15)
     plt.legend(fontsize = 20)
     plt.tight_layout()
-    plt.savefig(f"Result from Fixed k={k_dim}.png", dpi=300, bbox_inches="tight")
+    plt.savefig(f"Result from Fixed k={fixed_k}.png", dpi=300, bbox_inches="tight")
     plt.show()
     plt.close()
