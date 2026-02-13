@@ -61,3 +61,31 @@ using both CBD- and DG-sampled integer test vectors.
 
 ## How to run
 
+### Example: chi-square surrogate validation (`Expermient.py`)
+
+In `Expermient.py`, set the `__main__` block like this:
+
+```python
+if __name__ == "__main__":
+    from compute_final_basis import compute_final_basis
+    from utility import find_k
+
+    # parameters (toy default)
+    n = 100
+    m = 100
+    q = 257
+    beta = 40
+
+    # 1) Run reduction pipeline and obtain the final reduced basis (row-basis convention)
+    B_final = compute_final_basis(n, m, q, beta)
+    print("Complete the reduction.")
+
+    # 2) Decide tail dimension tau = beta + k
+    d = n + m + 1
+    k = find_k(beta, d)
+    tau = beta + k
+
+    # 3) Validate chi-square surrogate with DG/CBD test vectors and save plots
+    res_dg = validate_tail_projection_chi2(B_final, tau=tau, dist="dg",  N=500, seed=1)
+    res_cbd = validate_tail_projection_chi2(B_final, tau=tau, dist="cbd", N=500, seed=1)
+```
