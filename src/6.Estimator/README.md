@@ -31,7 +31,7 @@ Edit the parameters in the `if __name__ == "__main__":` block of each script
 ```bash
 sage our_estimator_GSA.py
 sage our_estimator_ZGSA.py
-
+```
 ## Examples
 ### Example: ZGSA estimator (n=1024, m=1024, logq=26)
 
