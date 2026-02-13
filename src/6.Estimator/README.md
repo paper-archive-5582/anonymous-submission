@@ -93,7 +93,6 @@ Result:
 ```
 
 ## NOTE
-## NOTE
 
 1. **ZGSA applicability (width constraint).**  
    In the ZGSA estimator, the Z-shaped transition/plateau region is only feasible when the computed `width` fits into the lattice dimension `d`.  
