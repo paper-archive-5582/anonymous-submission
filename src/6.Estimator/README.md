@@ -57,3 +57,8 @@ if __name__ == "__main__":
             sigma_s=math.sqrt(2/3),
         )
     )
+
+Run:
+```bash
+sage our_estimator_ZGSA.py
+
