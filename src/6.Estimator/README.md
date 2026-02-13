@@ -105,4 +105,7 @@ Result:
 3. **Switching the success test to BDD/uSVP baselines (GSA script).**  
    If you want to estimate parameters for a *baseline* primal attack (e.g., BDD-style decoding or uSVP-style primal success) rather than **our** pipeline, open `our_estimator_GSA.py` and **uncomment the marked baseline section** (the code block currently left as comments).  
    This toggles the modeled success condition to the BDD/uSVP-style measurement used in the standard pipeline.
-
+   ```python
+    #find_min_beta_usvp(n, logq, sigma, beta_min=2, beta_max=900, require_beta_ge_40=False)
+    #find_min_beta_bdd(n, logq, sigma, beta_min=2, beta_max=900, require_beta_ge_40=False)
+   ```
