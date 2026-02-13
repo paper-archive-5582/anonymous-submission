@@ -89,3 +89,12 @@ if __name__ == "__main__":
     res_dg = validate_tail_projection_chi2(B_final, tau=tau, dist="dg",  N=500, seed=1)
     res_cbd = validate_tail_projection_chi2(B_final, tau=tau, dist="cbd", N=500, seed=1)
 ```
+Run:
+```bash
+sage Experiment.py
+```
+Result:
+```bash
+Result_from_dg.png
+Result_from_cbd.png
+```
