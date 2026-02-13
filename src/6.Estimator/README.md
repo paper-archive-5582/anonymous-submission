@@ -91,3 +91,19 @@ Result:
 ```bash
 {'beta': 386, 'k': 48, 't': 434, 'rhs': 0.018406987554165255, 'lhs': 0.0, 'sigma_e': 1.0, 's_dist': 'same', 'm': 978, 'dim': 2003, 'T_BKZ': 138.41990719503144, 'T_HKZ': 137.48181225330293, 'delta_beta': 1.0040814957413666, 'Total_cost': 139.451191736665}
 ```
+
+## NOTE
+## NOTE
+
+1. **ZGSA applicability (width constraint).**  
+   In the ZGSA estimator, the Z-shaped transition/plateau region is only feasible when the computed `width` fits into the lattice dimension `d`.  
+   If `width > d`, the ZGSA construction is not applicable (the estimator should skip/fallback or fail, depending on the implementation).
+
+2. **Different `sigma` conventions in GSA vs ZGSA.**  
+   The GSA and ZGSA scripts may interpret and use the input `sigma` differently (e.g., which term it parameterizes in the success test, and whether it is treated as an error-width vs a target/secret-width proxy).  
+   Make sure you follow the parameter convention implemented in each script when setting `sigma` (and `sigma_s`).
+
+3. **Switching the success test to BDD/uSVP baselines (GSA script).**  
+   If you want to estimate parameters for a *baseline* primal attack (e.g., BDD-style decoding or uSVP-style primal success) rather than **our** pipeline, open `our_estimator_GSA.py` and **uncomment the marked baseline section** (the code block currently left as comments).  
+   This toggles the modeled success condition to the BDD/uSVP-style measurement used in the standard pipeline.
+
