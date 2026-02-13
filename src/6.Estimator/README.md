@@ -29,5 +29,5 @@ Edit the parameters in the `if __name__ == "__main__":` block of each script
 (e.g., `n`, `logq`, `sigma`, `beta_min`, `beta_max`) to match your target setting, then run:
 
 ```bash
-python our_estimator_GSA.py
-python our_estimator_ZGSA.py
+sage our_estimator_GSA.py
+sage our_estimator_ZGSA.py
