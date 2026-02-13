@@ -31,3 +31,29 @@ Edit the parameters in the `if __name__ == "__main__":` block of each script
 ```bash
 sage our_estimator_GSA.py
 sage our_estimator_ZGSA.py
+
+## Examples
+### Example: ZGSA estimator (n=1024, m=1024, logq=26)
+
+In `our_estimator_ZGSA.py`, set the `__main__` block like this:
+
+```python
+import math
+
+if __name__ == "__main__":
+    n = 1024
+    m = 1024
+    logq = 26
+    sigma = math.sqrt(2/3)
+
+    print(
+        find_min_beta_zgsa(
+            n, m, logq, sigma,
+            beta_min=300,
+            beta_max=950,
+            k_max=None,
+            require_beta_ge_40=True,
+            s_dist="dg",
+            sigma_s=math.sqrt(2/3),
+        )
+    )
