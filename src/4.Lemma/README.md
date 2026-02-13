@@ -94,3 +94,12 @@ Result:
 Result_from_fixed_dim_60.png
 Result_from_fixed_k_10.png
 ```
+
+## NOTE
+
+This code runs **fplll's HKZ reduction** to obtain the **dual-HKZ tail volume**.  
+As a result, depending on the chosen lattice dimension, the runtime can become very large and may take **over an hour** (or more) for higher dimensions.
+
+In addition, if the dimension is too high, **fplll may abort/terminate early** (e.g., internal limits, time/memory constraints), in which case the script may **fail to complete** and no results will be produced.
+
+
