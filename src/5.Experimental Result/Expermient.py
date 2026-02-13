@@ -236,5 +236,5 @@ if __name__=="__main__":
     tau = beta + k
 
     # plotting
-    res = validate_tail_projection_chi2(B_final, tau=beta+k, dist="dg", N=500, seed=1)
-    res = validate_tail_projection_chi2(B_final, tau=beta+k, dist="cbd", N=500, seed=1)
+    res_dg = validate_tail_projection_chi2(B_final, tau=beta+k, dist="dg", N=500, seed=1)
+    res_cbd = validate_tail_projection_chi2(B_final, tau=beta+k, dist="cbd", N=500, seed=1)
