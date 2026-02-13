@@ -98,3 +98,10 @@ Result:
 Result_from_dg.png
 Result_from_cbd.png
 ```
+
+## NOTE
+
+- `utility.py` imports `lattice-estimator` (MATZOV cost model used in `find_k`). 
+  In our setup, this import works when the `lattice-estimator/` folder is placed **in the same directory** as `utility.py`.
+  Therefore, be careful about **where you download/clone** `lattice-estimator`, and make sure your project structure (or `PYTHONPATH`) allows Python/Sage to find it.
+
