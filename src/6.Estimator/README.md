@@ -97,11 +97,10 @@ Result:
 
 1. **ZGSA applicability (width constraint).**  
    In the ZGSA estimator, the Z-shaped transition/plateau region is only feasible when the computed `width` fits into the lattice dimension `d`.  
-   If `width > d`, the ZGSA construction is not applicable (the estimator should skip/fallback or fail, depending on the implementation).
+   If `width > d`, the ZGSA construction is not applicable.
 
 2. **Different `sigma` conventions in GSA vs ZGSA.**  
    The GSA and ZGSA scripts may interpret and use the input `sigma` differently (e.g., which term it parameterizes in the success test, and whether it is treated as an error-width vs a target/secret-width proxy).  
-   Make sure you follow the parameter convention implemented in each script when setting `sigma` (and `sigma_s`).
 
 3. **Switching the success test to BDD/uSVP baselines (GSA script).**  
    If you want to estimate parameters for a *baseline* primal attack (e.g., BDD-style decoding or uSVP-style primal success) rather than **our** pipeline, open `our_estimator_GSA.py` and **uncomment the marked baseline section** (the code block currently left as comments).  
