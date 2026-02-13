@@ -59,5 +59,5 @@ using both CBD- and DG-sampled integer test vectors.
 - `fplll` is called at `../local/bin/fplll`
 - BKZ strategy JSON at `../local/strategies/default.json` 
 
-Recommended layout:
+## How to run
 
