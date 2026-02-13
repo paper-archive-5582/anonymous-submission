@@ -85,3 +85,12 @@ if __name__ == "__main__":
     k_dim = 10
     # (see script for full pipeline + plotting)
 ```
+Run:
+```bash
+sage tail_vol_HKZ.py
+```
+Result:
+```
+Result_from_fixed_dim_60.png
+Result_from_fixed_k_10.png
+```
