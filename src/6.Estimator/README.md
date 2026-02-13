@@ -66,4 +66,28 @@ Result:
 ```bash
 {'beta': 312, 'k': 48, 't': 360, 'n': 1024, 'm': 1024, 'd': 2049, 'r': 1024, 'logq': 26.0, 'w': 1929, 'sigma': 0.8165961962005822, 'log_threshold': -0.188764351510164, 'log_base_threshold': -0.25021177778280435, 'log_A_extra': 0.061447426272640215, 'delta_beta': 1.0047172039849062, 'T_BKZ_log2': 117.87349461009258, 'T_HKZ_log2': 116.93510267051546, 'Final_cost': 118.90462747493645}
 ```
+### Example: GSA estimator (n=1024, m=1024, logq=26)
 
+In `our_estimator_GSA.py`, set the `__main__` block like this:
+
+```python
+import math
+
+if __name__ == "__main__":
+    n =  256*4
+    logq = math.log(8380417,2)
+    sigma = (1, 1)
+
+    #find_min_beta_usvp(n, logq, sigma, beta_min=2, beta_max=900, require_beta_ge_40=False)
+    #find_min_beta_bdd(n, logq, sigma, beta_min=2, beta_max=900, require_beta_ge_40=False)
+    print(find_min_beta(n, logq, sigma, beta_min=350, beta_max=550, require_beta_ge_40=False))
+    )
+```
+Run:
+```bash
+sage our_estimator_GSA.py
+```
+Result:
+```bash
+{'beta': 386, 'k': 48, 't': 434, 'rhs': 0.018406987554165255, 'lhs': 0.0, 'sigma_e': 1.0, 's_dist': 'same', 'm': 978, 'dim': 2003, 'T_BKZ': 138.41990719503144, 'T_HKZ': 137.48181225330293, 'delta_beta': 1.0040814957413666, 'Total_cost': 139.451191736665}
+```
