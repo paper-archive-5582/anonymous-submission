@@ -61,4 +61,9 @@ if __name__ == "__main__":
 Run:
 ```bash
 sage our_estimator_ZGSA.py
+```
+Result:
+```bash
+>>> {'beta': 312, 'k': 48, 't': 360, 'n': 1024, 'm': 1024, 'd': 2049, 'r': 1024, 'logq': 26.0, 'w': 1929, 'sigma': 0.8165961962005822, 'log_threshold': -0.188764351510164, 'log_base_threshold': -0.25021177778280435, 'log_A_extra': 0.061447426272640215, 'delta_beta': 1.0047172039849062, 'T_BKZ_log2': 117.87349461009258, 'T_HKZ_log2': 116.93510267051546, 'Final_cost': 118.90462747493645}
+```
 
